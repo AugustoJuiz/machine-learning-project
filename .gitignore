@@ -1,0 +1,55 @@
+# ── Dados ──────────────────────────────────────────────────────────────────────
+# Dados brutos e processados ficam fora do versionamento (podem ser pesados e
+# regenerados; o README explica como obtê-los e como regenerar data/processed/).
+data/raw/*
+data/processed/*
+# Manter as pastas vazias versionadas
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# ── Modelos treinados ───────────────────────────────────────────────────────────
+# Arquivos .joblib podem ser grandes; são regenerados rodando main.py.
+models/*.joblib
+!models/.gitkeep
+
+# ── Credenciais Kaggle ──────────────────────────────────────────────────────────
+kaggle.json
+.kaggle/
+
+# ── Python ─────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── Jupyter ─────────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ── Ambientes virtuais ──────────────────────────────────────────────────────────
+venv/
+.venv/
+env/
+.env/
+ENV/
+
+# ── IDEs ────────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# ── Logs e temporários ──────────────────────────────────────────────────────────
+*.log
+*.tmp
+*.bak
+
+# NOTA: outputs/ NÃO é ignorada — figuras e tabelas geradas são versionadas
+# pois são usadas no artigo científico e nos slides.

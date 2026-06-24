@@ -1,0 +1,26 @@
+# Dependências do projeto — compatíveis com Python 3.12
+# Instale com: pip install -r requirements.txt
+
+# Manipulação e análise de dados
+pandas>=2.1,<3.0
+numpy>=1.26,<2.0
+
+# Visualização
+matplotlib>=3.8,<4.0
+seaborn>=0.13,<1.0
+
+# Machine Learning
+scikit-learn>=1.4,<2.0
+
+# Serialização de modelos
+joblib>=1.3,<2.0
+
+# Estatística
+scipy>=1.12,<2.0
+
+# Download do dataset via Kaggle API (opcional — o pipeline funciona sem ela)
+kaggle>=1.6,<2.0
+
+# Notebooks interativos
+jupyter>=1.0,<2.0
+ipykernel>=6.29,<7.0
