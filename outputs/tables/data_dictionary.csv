@@ -1,0 +1,24 @@
+variavel,tipo_pandas,valores_unicos,pct_ausentes,relevancia_meteorologica,decisao,justificativa
+Date,str,3436,0.0,Data da observação; usada para extrair Mês e Estação do ano.,remover,Coluna temporal; substituída por Month e Season na limpeza estrutural.
+Location,str,49,0.0,Estação meteorológica; captura variações geográficas no clima.,manter,Percentual de ausentes baixo; mantida para modelagem com imputação pela mediana/moda no Pipeline.
+MinTemp,float64,390,1.02,Temperatura mínima diária — influência indireta na umidade relativa.,manter,Percentual de ausentes baixo; mantida para modelagem com imputação pela mediana/moda no Pipeline.
+MaxTemp,float64,506,0.87,Temperatura máxima diária — relacionada à evapotranspiração.,manter,Percentual de ausentes baixo; mantida para modelagem com imputação pela mediana/moda no Pipeline.
+Rainfall,float64,682,2.24,Precipitação acumulada no dia — preditor direto de umidade e chuva futura.,manter,Percentual de ausentes baixo; mantida para modelagem com imputação pela mediana/moda no Pipeline.
+Evaporation,float64,359,43.17,Evaporação de bandeja — indica condições de umidade do ar; alto % ausentes.,remover,Ausentes: 43.2% acima do limiar de 40%; candidata a remoção na limpeza estrutural.
+Sunshine,float64,146,48.01,Horas de sol — inversamente correlacionada com nebulosidade; alto % ausentes.,remover,Ausentes: 48.0% acima do limiar de 40%; candidata a remoção na limpeza estrutural.
+WindGustDir,str,17,7.1,Direção da rajada máxima de vento.,manter,Percentual de ausentes baixo; mantida para modelagem com imputação pela mediana/moda no Pipeline.
+WindGustSpeed,float64,68,7.06,Velocidade da rajada máxima — associada a sistemas de baixa pressão.,manter,Percentual de ausentes baixo; mantida para modelagem com imputação pela mediana/moda no Pipeline.
+WindDir9am,str,17,7.26,Direção do vento às 9h.,manter,Percentual de ausentes baixo; mantida para modelagem com imputação pela mediana/moda no Pipeline.
+WindDir3pm,str,17,2.91,Direção do vento às 15h.,manter,Percentual de ausentes baixo; mantida para modelagem com imputação pela mediana/moda no Pipeline.
+WindSpeed9am,float64,44,1.21,Velocidade do vento às 9h.,manter,Percentual de ausentes baixo; mantida para modelagem com imputação pela mediana/moda no Pipeline.
+WindSpeed3pm,float64,45,2.11,Velocidade do vento às 15h.,manter,Percentual de ausentes baixo; mantida para modelagem com imputação pela mediana/moda no Pipeline.
+Humidity9am,float64,102,1.82,Umidade relativa às 9h.,manter,Percentual de ausentes baixo; mantida para modelagem com imputação pela mediana/moda no Pipeline.
+Humidity3pm,float64,102,3.1,Umidade relativa às 15h — forte preditor de chuva no dia seguinte.,manter,Percentual de ausentes baixo; mantida para modelagem com imputação pela mediana/moda no Pipeline.
+Pressure9am,float64,547,10.36,Pressão atmosférica às 9h.,manter,Percentual de ausentes baixo; mantida para modelagem com imputação pela mediana/moda no Pipeline.
+Pressure3pm,float64,550,10.33,Pressão atmosférica às 15h — queda de pressão indica frentes chuvosas.,manter,Percentual de ausentes baixo; mantida para modelagem com imputação pela mediana/moda no Pipeline.
+Cloud9am,float64,11,38.42,Nebulosidade às 9h (oktas 0–9); alto % ausentes.,avaliar,Ausentes: 38.4% (moderado); manutenção avaliada conforme relevância meteorológica na EDA.
+Cloud3pm,float64,11,40.81,Nebulosidade às 15h (oktas 0–9) — associada a precipitação; alto % ausentes.,remover,Ausentes: 40.8% acima do limiar de 40%; candidata a remoção na limpeza estrutural.
+Temp9am,float64,442,1.21,Temperatura às 9h.,manter,Percentual de ausentes baixo; mantida para modelagem com imputação pela mediana/moda no Pipeline.
+Temp3pm,float64,503,2.48,Temperatura às 15h.,manter,Percentual de ausentes baixo; mantida para modelagem com imputação pela mediana/moda no Pipeline.
+RainToday,str,3,2.24,Indica se choveu no dia atual (Yes/No) — preditor direto da variável-alvo.,manter,Preditor direto da variável-alvo; convertida para 0/1 na limpeza estrutural.
+RainTomorrow,str,3,2.25,VARIÁVEL-ALVO: indica se choverá no dia seguinte (Yes → 1 / No → 0).,manter,Variável-alvo do modelo; não deve ser removida.
