@@ -86,11 +86,15 @@ Dataset bruto → EDA → Limpeza → Split → Pipeline sklearn → CV → Tuni
 **Conteúdo visual:**
 - Fig. 4: Boxplots de Humidity3pm e Pressure3pm agrupados por RainTomorrow (detalhe)
 - Fig. 5: Heatmap de correlação (versão menor ou recorte das variáveis-chave)
+- Fig. 7: Scatter plots de pares meteorológicos coloridos por RainTomorrow
+  (ex.: Humidity3pm × Pressure3pm mostrando separação entre classes)
 - Destaque: correlações com RainTomorrow
 
 **Fala sugerida:**
 > "Os boxplots mostram que dias com chuva amanhã tendem a ter maior umidade e menor pressão
-> hoje à tarde. O heatmap de correlação confirma essa relação. Também observamos que RainToday
+> hoje à tarde. O heatmap de correlação confirma essa relação. Os scatter plots (Fig. 7)
+> evidenciam visualmente a separação entre classes: pontos laranjas — dias que choverão —
+> concentram-se em faixas de alta umidade e baixa pressão. Também observamos que RainToday
 > é um forte preditor de RainTomorrow (Fig. 6)."
 
 ---
@@ -153,10 +157,10 @@ Variáveis categóricas → Imputer(moda)   → OneHotEncoder
 
 ---
 
-## Slide 10 — Resultados Comparativos (Fig 9b)
+## Slide 10 — Resultados Comparativos (Fig 11)
 
 **Conteúdo visual:**
-- Fig. 9b: Gráfico de barras comparando Accuracy, Precision, Recall, F1, ROC-AUC entre modelos
+- Fig. 11: Gráfico de barras comparando Accuracy, Precision, Recall, F1, ROC-AUC entre modelos
 - Destaque visual no melhor modelo
 
 **Fala sugerida:**
@@ -166,10 +170,10 @@ Variáveis categóricas → Imputer(moda)   → OneHotEncoder
 
 ---
 
-## Slide 11 — Melhor Modelo: Matriz de Confusão (Fig 7)
+## Slide 11 — Melhor Modelo: Matriz de Confusão (Fig 8)
 
 **Conteúdo visual:**
-- Fig. 7: Matriz de confusão do melhor modelo (versão colorida)
+- Fig. 8: Matriz de confusão do melhor modelo (versão colorida)
 - Explicação dos quadrantes: TN, FP, FN, TP com ícones de chuva/sol
 - Métricas: Precision = [PREENCHER], Recall = [PREENCHER], F1 = [PREENCHER]
 
@@ -180,14 +184,14 @@ Variáveis categóricas → Imputer(moda)   → OneHotEncoder
 
 ---
 
-## Slide 12 — Curvas ROC e Importância das Variáveis (Fig 8 + Fig 10)
+## Slide 12 — Curvas ROC e Importância das Variáveis (Fig 9 + Fig 12)
 
 **Conteúdo visual:**
-- Fig. 8: Curvas ROC de todos os modelos (metade do slide)
-- Fig. 10: Top 10 features mais importantes — Random Forest (outra metade)
+- Fig. 9: Curvas ROC de todos os modelos (metade do slide)
+- Fig. 12: Top 10 features mais importantes — Random Forest (outra metade)
 
 **Fala sugerida:**
-> "As curvas ROC confirmam a superioridade do [PREENCHER] com AUC = [PREENCHER].
+> "As curvas ROC (Fig. 9) confirmam a superioridade do [PREENCHER] com AUC = [PREENCHER].
 > Quanto às variáveis, [PREENCHER] e [PREENCHER] foram as mais importantes — o que faz
 > sentido meteorológico: alta umidade à tarde e quedas de pressão indicam frentes chuvosas."
 

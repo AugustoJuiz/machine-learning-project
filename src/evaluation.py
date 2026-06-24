@@ -4,11 +4,11 @@ evaluation.py — Avaliação dos modelos no conjunto de teste.
 Funções:
     evaluate_on_test()       — computa todas as métricas para um modelo.
     build_metrics_table()    — tabela comparativa de todos os modelos.
-    plot_confusion_matrix()  — Fig 7: matriz de confusão do melhor modelo.
-    plot_roc_curves()        — Fig 8: curvas ROC de todos os modelos.
-    plot_pr_curve()          — curva Precision-Recall do melhor modelo.
-    plot_metrics_comparison()— Fig 9: gráfico comparativo de métricas.
-    feature_importance()     — Fig 10: importância das variáveis (RF e LogReg).
+    plot_confusion_matrix()  — Fig 8: matriz de confusão do melhor modelo.
+    plot_roc_curves()        — Fig 9: curvas ROC de todos os modelos.
+    plot_pr_curve()          — Fig 10: curva Precision-Recall do melhor modelo.
+    plot_metrics_comparison()— Fig 11: gráfico comparativo de métricas.
+    feature_importance()     — Fig 12: importância das variáveis (RF e LogReg).
     select_best_model()      — seleciona o melhor modelo por F1 e ROC-AUC.
 """
 
@@ -165,7 +165,7 @@ def plot_confusion_matrix(
         fontsize=9, style="italic", y=1.01,
     )
 
-    save_fig(fig, "07_confusion_matrix")
+    save_fig(fig, "08_confusion_matrix")
     return fig
 
 
@@ -210,7 +210,7 @@ def plot_roc_curves(
     ax.set_xlim([0, 1])
     ax.set_ylim([0, 1.01])
 
-    save_fig(fig, "08_roc_curves")
+    save_fig(fig, "09_roc_curves")
     return fig
 
 
@@ -225,7 +225,7 @@ def plot_pr_curve(
     Gera a curva Precision-Recall do modelo indicado.
 
     Especialmente relevante em datasets desbalanceados, onde a curva ROC
-    pode ser otimista. Salva em outputs/figures/09_pr_curve.png.
+    pode ser otimista. Salva em outputs/figures/10_pr_curve.png.
 
     Parâmetros:
         name   : nome do modelo.
@@ -253,7 +253,7 @@ def plot_pr_curve(
     ax.set_xlim([0, 1])
     ax.set_ylim([0, 1.05])
 
-    save_fig(fig, "09_pr_curve")
+    save_fig(fig, "10_pr_curve")
     return fig
 
 
@@ -266,7 +266,7 @@ def plot_metrics_comparison(
     Gera gráfico de barras comparando as principais métricas entre modelos (Fig 9).
 
     Métricas exibidas: accuracy, precision, recall, f1, roc_auc.
-    Salva em outputs/figures/09_metrics_comparison.png.
+    Salva em outputs/figures/11_metrics_comparison.png.
 
     Parâmetros:
         df_metrics : DataFrame retornado por build_metrics_table().
@@ -289,7 +289,7 @@ def plot_metrics_comparison(
     ax.legend(title="Metrica", bbox_to_anchor=(1.01, 1), loc="upper left", fontsize=9)
     ax.axhline(y=1.0, linestyle="--", color="gray", linewidth=0.6, alpha=0.5)
 
-    save_fig(fig, "09_metrics_comparison")
+    save_fig(fig, "11_metrics_comparison")
     return fig
 
 
@@ -381,7 +381,7 @@ def feature_importance(
         fontsize=13,
     )
 
-    save_fig(fig, "10_feature_importance")
+    save_fig(fig, "12_feature_importance")
     return fig
 
 

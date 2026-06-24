@@ -2,17 +2,18 @@
 eda.py — Análise Exploratória de Dados (EDA).
 
 Funções:
-    get_numeric_cols()          — retorna colunas numéricas (excluindo alvo e Date).
-    get_categorical_cols()      — retorna colunas categóricas (excluindo alvo e Date).
-    descriptive_stats()         — estatísticas descritivas das variáveis numéricas.
-    outlier_analysis()          — análise de outliers pelo método IQR.
-    plot_target_distribution()  — Fig 1: distribuição da variável-alvo RainTomorrow.
-    plot_missing_values()       — Fig 2: percentual de ausentes por coluna.
-    plot_numeric_histograms()   — Fig 3: histogramas das principais variáveis numéricas.
-    plot_numeric_boxplots()     — Fig 4: boxplots das principais variáveis numéricas.
-    plot_correlation_heatmap()  — Fig 5: heatmap de correlação entre variáveis numéricas.
-    plot_rain_today_vs_tomorrow() — Fig 6: relação entre RainToday e RainTomorrow.
-    run_full_eda()              — orquestra toda a EDA e retorna um dicionário de resultados.
+    get_numeric_cols()             — retorna colunas numéricas (excluindo alvo e Date).
+    get_categorical_cols()         — retorna colunas categóricas (excluindo alvo e Date).
+    descriptive_stats()            — estatísticas descritivas das variáveis numéricas.
+    outlier_analysis()             — análise de outliers pelo método IQR.
+    plot_target_distribution()     — Fig 1: distribuição da variável-alvo RainTomorrow.
+    plot_missing_values()          — Fig 2: percentual de ausentes por coluna.
+    plot_numeric_histograms()      — Fig 3: histogramas das principais variáveis numéricas.
+    plot_numeric_boxplots()        — Fig 4: boxplots das principais variáveis numéricas.
+    plot_correlation_heatmap()     — Fig 5: heatmap de correlação entre variáveis numéricas.
+    plot_rain_today_vs_tomorrow()  — Fig 6: relação entre RainToday e RainTomorrow.
+    plot_scatter_relationships()   — Fig 7: scatter plots de pares meteorológicos por RainTomorrow.
+    run_full_eda()                 — orquestra toda a EDA e retorna um dicionário de resultados.
 """
 
 import math
@@ -23,7 +24,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from src.config import PALETTE, RANDOM_STATE, TABLES_DIR, TARGET
+from src.config import PALETTE, TABLES_DIR, TARGET
 from src.visualization import add_value_labels, save_fig, setup_style
 
 # ── Colunas de interesse meteorológico para visualizações focadas ───────────────
@@ -389,7 +390,7 @@ def plot_numeric_boxplots(
         if TARGET in data.columns and data[TARGET].nunique() > 1:
             sns.boxplot(
                 x=TARGET, y=col, data=data,
-                palette=palette_list[:2], ax=ax,
+                hue=TARGET, palette=palette_list[:2], legend=False, ax=ax,
                 fliersize=2, linewidth=0.8,
             )
             ax.set_xlabel("RainTomorrow", fontsize=8)
@@ -545,13 +546,96 @@ def plot_rain_today_vs_tomorrow(df: pd.DataFrame) -> plt.Figure:
     return fig
 
 
+# ── Fig 7: Scatter plots de relações meteorológicas ──────────────────────────────
+
+def plot_scatter_relationships(
+    df: pd.DataFrame,
+    max_sample: int = 5_000,
+) -> plt.Figure:
+    """
+    Gera scatter plots de pares meteorológicos coloridos por RainTomorrow (Fig 7).
+
+    Evidencia a separação entre classes para variáveis preditoras-chave.
+    Limita a amostra visual a max_sample pontos para evitar gráficos pesados.
+    Salva em outputs/figures/07_scatter_relationships.png.
+
+    Parâmetros:
+        df         : DataFrame bruto.
+        max_sample : número máximo de pontos por scatter (padrão 5.000).
+
+    Retorno:
+        plt.Figure
+    """
+    setup_style()
+
+    SCATTER_PAIRS = [
+        ("Humidity3pm", "Pressure3pm"),
+        ("Humidity3pm", "Temp3pm"),
+        ("WindGustSpeed", "Pressure3pm"),
+        ("Rainfall", "Humidity3pm"),
+    ]
+
+    valid_pairs = [
+        (x, y) for x, y in SCATTER_PAIRS
+        if x in df.columns and y in df.columns
+    ]
+    if not valid_pairs:
+        print("[eda] Nenhum par de colunas disponível para scatter. Figura 7 ignorada.")
+        return plt.figure()
+
+    n_cols_plot = 2
+    n_rows = math.ceil(len(valid_pairs) / n_cols_plot)
+    palette = sns.color_palette(PALETTE, n_colors=2)
+
+    fig, axes = plt.subplots(n_rows, n_cols_plot,
+                              figsize=(n_cols_plot * 5.5, n_rows * 4.5))
+    axes_flat = axes.flatten() if hasattr(axes, "flatten") else [axes]
+
+    for i, (x_col, y_col) in enumerate(valid_pairs):
+        ax = axes_flat[i]
+        cols_needed = ([x_col, y_col, TARGET] if TARGET in df.columns
+                       else [x_col, y_col])
+        data = df[cols_needed].dropna()
+
+        if len(data) > max_sample:
+            data = data.sample(max_sample, random_state=42)
+
+        if TARGET in data.columns and data[TARGET].nunique() > 1:
+            for j, (label, grp) in enumerate(data.groupby(TARGET)):
+                ax.scatter(
+                    grp[x_col], grp[y_col],
+                    c=[palette[j % 2]], label=str(label),
+                    alpha=0.4, s=12, linewidths=0,
+                )
+            ax.legend(title="RainTomorrow", fontsize=8, markerscale=2)
+        else:
+            ax.scatter(data[x_col], data[y_col],
+                       alpha=0.4, s=12, linewidths=0, color=palette[0])
+
+        ax.set_xlabel(x_col, fontsize=10)
+        ax.set_ylabel(y_col, fontsize=10)
+        ax.set_title(f"{x_col} × {y_col}", fontsize=11, fontweight="bold")
+
+    for j in range(len(valid_pairs), len(axes_flat)):
+        axes_flat[j].set_visible(False)
+
+    fig.suptitle(
+        "Relações entre Variáveis Meteorológicas por RainTomorrow\n"
+        "(amostra de até 5.000 pontos; sem chuva amanhã vs. com chuva amanhã)",
+        fontsize=11, y=1.02,
+    )
+
+    save_fig(fig, "07_scatter_relationships")
+    return fig
+
+
 # ── Orquestrador ─────────────────────────────────────────────────────────────────
 
 def run_full_eda(df: pd.DataFrame) -> dict:
     """
     Executa toda a análise exploratória de dados em sequência.
 
-    Chama: descriptive_stats, outlier_analysis e todas as funções de plot (Fig 1–6).
+    Chama: descriptive_stats, outlier_analysis e todas as funções de plot (Fig 1–7).
     Salva todas as tabelas e figuras em seus diretórios correspondentes.
 
     Parâmetros:
@@ -597,6 +681,10 @@ def run_full_eda(df: pd.DataFrame) -> dict:
 
     print("[eda] Gerando Fig 6 — RainToday vs RainTomorrow...")
     figures.append(plot_rain_today_vs_tomorrow(df))
+    plt.close("all")
+
+    print("[eda] Gerando Fig 7 — Scatter plots de relações meteorológicas...")
+    figures.append(plot_scatter_relationships(df))
     plt.close("all")
 
     print("\n[eda] EDA concluída. Figuras e tabelas salvas.")

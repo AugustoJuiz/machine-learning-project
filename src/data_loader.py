@@ -17,6 +17,7 @@ import pandas as pd
 from src.config import (
     KAGGLE_DATASET,
     KAGGLE_FILENAME,
+    MISSING_DROP_THRESHOLD,
     RAW_CSV,
     RAW_DIR,
     TABLES_DIR,
@@ -200,13 +201,55 @@ def basic_inspect(df: pd.DataFrame) -> None:
     print(f"\n{sep}\n")
 
 
+def _build_decision(col: str, pct_missing: float) -> tuple[str, str]:
+    """
+    Retorna (decisao, justificativa) para uma coluna do dataset.
+
+    Lógica (em ordem de prioridade):
+      1. Variável-alvo → sempre manter.
+      2. Coluna temporal Date → remover (substituída por Month/Season).
+      3. RainToday → manter (convertida para 0/1 na limpeza estrutural).
+      4. Ausentes > MISSING_DROP_THRESHOLD (40%) → candidata a remoção.
+      5. Ausentes entre 20% e 40% → avaliação empírica na EDA.
+      6. Caso geral → manter com imputação no Pipeline.
+    """
+    threshold_pct = MISSING_DROP_THRESHOLD * 100
+    if col == TARGET:
+        return "manter", "Variável-alvo do modelo; não deve ser removida."
+    if col == "Date":
+        return "remover", (
+            "Coluna temporal; substituída por Month e Season "
+            "na limpeza estrutural."
+        )
+    if col == "RainToday":
+        return "manter", (
+            "Preditor direto da variável-alvo; "
+            "convertida para 0/1 na limpeza estrutural."
+        )
+    if pct_missing > threshold_pct:
+        return "remover", (
+            f"Ausentes: {pct_missing:.1f}% acima do limiar de "
+            f"{threshold_pct:.0f}%; candidata a remoção na limpeza estrutural."
+        )
+    if pct_missing > threshold_pct * 0.5:  # acima de 20%
+        return "avaliar", (
+            f"Ausentes: {pct_missing:.1f}% (moderado); "
+            "manutenção avaliada conforme relevância meteorológica na EDA."
+        )
+    return "manter", (
+        "Percentual de ausentes baixo; mantida para modelagem "
+        "com imputação pela mediana/moda no Pipeline."
+    )
+
+
 def build_data_dictionary(df: pd.DataFrame) -> pd.DataFrame:
     """
     Gera o dicionário de dados do dataset.
 
     Cria uma tabela com: nome da variável, tipo pandas, percentual de
-    ausentes, relevância meteorológica e campos para preenchimento empírico
-    na EDA (decisão de manter/remover e justificativa).
+    ausentes, relevância meteorológica, decisão de manter/remover e
+    justificativa (derivadas programaticamente a partir do limiar
+    MISSING_DROP_THRESHOLD e das regras estruturais do pipeline).
 
     Parâmetros:
         df: DataFrame bruto retornado por load_raw().
@@ -218,14 +261,15 @@ def build_data_dictionary(df: pd.DataFrame) -> pd.DataFrame:
     records = []
     for col in df.columns:
         pct_missing = df[col].isnull().mean() * 100
+        decisao, justificativa = _build_decision(col, pct_missing)
         records.append({
-            "variavel":               col,
-            "tipo_pandas":            str(df[col].dtype),
-            "valores_unicos":         df[col].nunique(dropna=False),
-            "pct_ausentes":           round(pct_missing, 2),
+            "variavel":                col,
+            "tipo_pandas":             str(df[col].dtype),
+            "valores_unicos":          df[col].nunique(dropna=False),
+            "pct_ausentes":            round(pct_missing, 2),
             "relevancia_meteorologica": _METEO_RELEVANCE.get(col, "—"),
-            "decisao":                "a definir na EDA",
-            "justificativa":          "a definir na EDA",
+            "decisao":                 decisao,
+            "justificativa":           justificativa,
         })
 
     dictionary = pd.DataFrame(records)

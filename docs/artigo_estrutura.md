@@ -160,7 +160,7 @@ todos os atributos, seus tipos, percentual de valores ausentes e relevância met
 
 ### 3.2 Análise Exploratória de Dados (EDA)
 
-A EDA foi conduzida em seis etapas, cada uma resultando em uma figura salva em `outputs/figures/`:
+A EDA foi conduzida em sete etapas, cada uma resultando em uma figura salva em `outputs/figures/`:
 
 - **Fig. 1** — Distribuição de `RainTomorrow`: evidencia o desbalanceamento de classes
   (~[PREENCHER]% `No` versus ~[PREENCHER]% `Yes`), fundamentando o uso de `class_weight='balanced'`.
@@ -173,6 +173,10 @@ A EDA foi conduzida em seis etapas, cada uma resultando em uma figura salva em `
 - **Fig. 5** — Heatmap de correlação de Pearson: analisa multicolinearidade e correlação com o alvo.
 - **Fig. 6** — Relação entre `RainToday` e `RainTomorrow`: dias com chuva apresentam maior
   probabilidade de chuva no dia seguinte.
+- **Fig. 7** — Scatter plots de pares meteorológicos coloridos por `RainTomorrow`
+  (`Humidity3pm × Pressure3pm`, `Humidity3pm × Temp3pm`, `WindGustSpeed × Pressure3pm`,
+  `Rainfall × Humidity3pm`): confirma separação visual entre classes para variáveis-chave,
+  evidenciando que alta umidade à tarde e baixa pressão caracterizam dias chuvosos.
 
 A análise de outliers pelo método IQR (Tabela 2, em `outputs/tables/outlier_analysis.csv`)
 identificou valores extremos em [PREENCHER] das colunas. Optou-se por não remover outliers,
@@ -190,6 +194,13 @@ conjunto de treino, eliminando data leakage.
 - Extração de `Month` (mês) e `Season` (estação australiana) a partir da coluna `Date`.
 - Remoção de colunas com percentual de ausentes acima de 40%: [PREENCHER] colunas removidas
   (ver Tabela 1 para justificativas).
+
+> **Nota metodológica:** a decisão de remover colunas por alto percentual de ausentes é uma
+> operação estrutural e determinística, baseada na taxa de missingness do dataset completo
+> e na relevância meteorológica da variável — sem uso da variável-alvo nem de qualquer
+> estatística do conjunto de teste. Não configura data leakage. Imputação, normalização
+> e codificação permanecem exclusivamente dentro do `Pipeline`/`ColumnTransformer`,
+> ajustados apenas no conjunto de treino.
 
 **Dentro do Pipeline/ColumnTransformer** (ajustados apenas no treino):
 - **Variáveis numéricas:** `SimpleImputer(strategy='median')` → `StandardScaler()`.
@@ -241,7 +252,7 @@ O diagrama abaixo representa o fluxo completo do pipeline implementado:
 
 ```mermaid
 flowchart LR
-  A[Dataset bruto\nweatherAUS.csv] --> B[EDA\nFig 1-6]
+  A[Dataset bruto\nweatherAUS.csv] --> B[EDA\nFig 1-7]
   B --> C[Limpeza estrutural\ndata/processed/]
   C --> D[Split treino/teste\n80% / 20% estratificado]
   D --> E[Pipeline sklearn\nColumnTransformer]
@@ -295,13 +306,14 @@ o conhecimento meteorológico.
 | RandomForest | [PREENCHER] | [PREENCHER] | [PREENCHER] | [PREENCHER] | [PREENCHER] |
 | SVM | [PREENCHER] | [PREENCHER] | [PREENCHER] | [PREENCHER] | [PREENCHER] |
 
-A Fig. 7 apresenta a matriz de confusão do modelo [PREENCHER]. A Fig. 8 exibe as curvas ROC
+A Fig. 8 apresenta a matriz de confusão do modelo [PREENCHER]. A Fig. 9 exibe as curvas ROC
 de todos os modelos, evidenciando a superioridade de [PREENCHER] com área [PREENCHER].
-A Fig. 9b compara visualmente as métricas entre modelos.
+A Fig. 10 mostra a curva Precision-Recall do melhor modelo. A Fig. 11 compara visualmente
+as métricas entre modelos.
 
 ### 4.4 Importância das Variáveis
 
-A Fig. 10 apresenta as variáveis mais relevantes identificadas pelo Random Forest e pelos
+A Fig. 12 apresenta as variáveis mais relevantes identificadas pelo Random Forest e pelos
 coeficientes da Regressão Logística. As variáveis [PREENCHER] e [PREENCHER] foram as mais
 importantes, consistentes com o conhecimento meteorológico: [PREENCHER].
 
