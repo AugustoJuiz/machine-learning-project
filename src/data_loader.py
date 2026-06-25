@@ -1,12 +1,4 @@
-"""
-data_loader.py — Carregamento, inspeção e dicionário de dados.
-
-Funções:
-    download_dataset()      — baixa o dataset via Kaggle API (opcional).
-    load_raw()              — lê o CSV bruto local com mensagem clara se ausente.
-    basic_inspect()         — exibe shape, tipos, head, distribuição do alvo e % ausentes.
-    build_data_dictionary() — gera dicionário de dados como DataFrame e salva em CSV.
-"""
+"""Carregamento, inspeção e dicionário de dados do dataset Rain in Australia."""
 
 import sys
 import textwrap
@@ -25,9 +17,6 @@ from src.config import (
 )
 
 
-# ── Mapeamento de relevância meteorológica das colunas ──────────────────────────
-# Usado pelo dicionário de dados. Campos decisão/justificativa são preenchidos
-# empiricamente na EDA (Etapa 2) com base nos dados reais.
 _METEO_RELEVANCE: dict[str, str] = {
     "Date":            "Data da observação; usada para extrair Mês e Estação do ano.",
     "Location":        "Estação meteorológica; captura variações geográficas no clima.",
@@ -56,17 +45,7 @@ _METEO_RELEVANCE: dict[str, str] = {
 
 
 def download_dataset() -> None:
-    """
-    Baixa o dataset Rain in Australia via Kaggle API.
-
-    Comportamento:
-        - Se `data/raw/weatherAUS.csv` já existir, pula o download.
-        - Se a Kaggle API não estiver configurada, exibe instruções claras para
-          download manual e encerra sem erro fatal.
-
-    Retorno:
-        None
-    """
+    """Baixa o dataset via Kaggle API; pula se o CSV já existir em data/raw/."""
     if RAW_CSV.exists():
         print(f"[data_loader] Dataset já presente em: {RAW_CSV}")
         print("[data_loader] Download ignorado.")
@@ -75,21 +54,13 @@ def download_dataset() -> None:
     print("[data_loader] Arquivo não encontrado. Tentando download via Kaggle API...")
 
     try:
-        # Importação dentro da função para não forçar dependência em quem não usa
         from kaggle.api.kaggle_api_extended import KaggleApiExtended  # type: ignore
         api = KaggleApiExtended()
         api.authenticate()
         RAW_DIR.mkdir(parents=True, exist_ok=True)
-        api.dataset_download_files(
-            KAGGLE_DATASET,
-            path=str(RAW_DIR),
-            unzip=True,
-            quiet=False,
-        )
-        # Renomeia se o arquivo descompactado tiver nome diferente
+        api.dataset_download_files(KAGGLE_DATASET, path=str(RAW_DIR), unzip=True, quiet=False)
         downloaded = RAW_DIR / KAGGLE_FILENAME
         if not downloaded.exists():
-            # Tenta encontrar qualquer CSV na pasta
             csvs = list(RAW_DIR.glob("*.csv"))
             if csvs:
                 csvs[0].rename(RAW_CSV)
@@ -103,7 +74,7 @@ def download_dataset() -> None:
 
 
 def _print_manual_fallback(motivo: str) -> None:
-    """Exibe instruções detalhadas de download manual e encerra sem exceção."""
+    """Exibe instruções de download manual e encerra sem exceção."""
     mensagem = textwrap.dedent(f"""
     ╔══════════════════════════════════════════════════════════════════════════════╗
     ║  KAGGLE API INDISPONÍVEL — SIGA AS INSTRUÇÕES ABAIXO                       ║
@@ -130,15 +101,7 @@ def _print_manual_fallback(motivo: str) -> None:
 
 
 def load_raw() -> pd.DataFrame:
-    """
-    Lê o CSV bruto do dataset Rain in Australia.
-
-    Retorno:
-        pd.DataFrame com os dados brutos.
-
-    Levanta:
-        SystemExit com mensagem clara se o arquivo não for encontrado.
-    """
+    """Lê o CSV bruto; encerra com mensagem clara se não encontrado."""
     if not RAW_CSV.exists():
         print(
             f"\n[ERRO] Arquivo não encontrado: {RAW_CSV}\n"
@@ -156,16 +119,7 @@ def load_raw() -> pd.DataFrame:
 
 
 def basic_inspect(df: pd.DataFrame) -> None:
-    """
-    Exibe inspeção básica do dataset: shape, tipos, primeiras linhas,
-    distribuição da variável-alvo e percentual de ausentes por coluna.
-
-    Parâmetros:
-        df: DataFrame bruto retornado por load_raw().
-
-    Retorno:
-        None (imprime no stdout).
-    """
+    """Exibe shape, tipos, primeiras linhas, distribuição do alvo e % ausentes."""
     sep = "─" * 70
 
     print(f"\n{sep}")
@@ -202,62 +156,29 @@ def basic_inspect(df: pd.DataFrame) -> None:
 
 
 def _build_decision(col: str, pct_missing: float) -> tuple[str, str]:
-    """
-    Retorna (decisao, justificativa) para uma coluna do dataset.
-
-    Lógica (em ordem de prioridade):
-      1. Variável-alvo → sempre manter.
-      2. Coluna temporal Date → remover (substituída por Month/Season).
-      3. RainToday → manter (convertida para 0/1 na limpeza estrutural).
-      4. Ausentes > MISSING_DROP_THRESHOLD (40%) → candidata a remoção.
-      5. Ausentes entre 20% e 40% → avaliação empírica na EDA.
-      6. Caso geral → manter com imputação no Pipeline.
-    """
+    """Retorna (decisao, justificativa) para uma coluna com base no % de ausentes e regras estruturais."""
     threshold_pct = MISSING_DROP_THRESHOLD * 100
     if col == TARGET:
         return "manter", "Variável-alvo do modelo; não deve ser removida."
     if col == "Date":
-        return "remover", (
-            "Coluna temporal; substituída por Month e Season "
-            "na limpeza estrutural."
-        )
+        return "remover", "Coluna temporal; substituída por Month e Season na limpeza estrutural."
     if col == "RainToday":
-        return "manter", (
-            "Preditor direto da variável-alvo; "
-            "convertida para 0/1 na limpeza estrutural."
-        )
+        return "manter", "Preditor direto da variável-alvo; convertida para 0/1 na limpeza estrutural."
     if pct_missing > threshold_pct:
         return "remover", (
             f"Ausentes: {pct_missing:.1f}% acima do limiar de "
             f"{threshold_pct:.0f}%; candidata a remoção na limpeza estrutural."
         )
-    if pct_missing > threshold_pct * 0.5:  # acima de 20%
+    if pct_missing > threshold_pct * 0.5:
         return "avaliar", (
             f"Ausentes: {pct_missing:.1f}% (moderado); "
             "manutenção avaliada conforme relevância meteorológica na EDA."
         )
-    return "manter", (
-        "Percentual de ausentes baixo; mantida para modelagem "
-        "com imputação pela mediana/moda no Pipeline."
-    )
+    return "manter", "Percentual de ausentes baixo; mantida para modelagem com imputação pela mediana/moda no Pipeline."
 
 
 def build_data_dictionary(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Gera o dicionário de dados do dataset.
-
-    Cria uma tabela com: nome da variável, tipo pandas, percentual de
-    ausentes, relevância meteorológica, decisão de manter/remover e
-    justificativa (derivadas programaticamente a partir do limiar
-    MISSING_DROP_THRESHOLD e das regras estruturais do pipeline).
-
-    Parâmetros:
-        df: DataFrame bruto retornado por load_raw().
-
-    Retorno:
-        pd.DataFrame com o dicionário de dados.
-        O arquivo também é salvo em outputs/tables/data_dictionary.csv.
-    """
+    """Gera e salva o dicionário de dados em outputs/tables/data_dictionary.csv."""
     records = []
     for col in df.columns:
         pct_missing = df[col].isnull().mean() * 100
@@ -274,7 +195,6 @@ def build_data_dictionary(df: pd.DataFrame) -> pd.DataFrame:
 
     dictionary = pd.DataFrame(records)
 
-    # Salva em CSV
     output_path = TABLES_DIR / "data_dictionary.csv"
     dictionary.to_csv(output_path, index=False, encoding="utf-8")
     print(f"[data_loader] Dicionário de dados salvo em: {output_path}")
